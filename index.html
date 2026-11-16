@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FornoLab — Neapolitan Pizza Studio</title>
+<meta name="description" content="Build a 32 cm Neapolitan pizza ingredient by ingredient, watch its Flavor DNA, and send it to the wood-fired oven.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23e5a64f'/%3E%3Ccircle cx='16' cy='16' r='10' fill='%23c8261b'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ INTRO: closed pizza box ============ -->
+<section id="intro" aria-label="Welcome to FornoLab">
+  <div class="intro-copy">
+    <div class="wordmark">Forno<span>Lab</span></div>
+    <h1>Open the box.<br>Build the pie.</h1>
+    <p>Pick, pour and place every ingredient on a 32&nbsp;cm Neapolitan pizza — then watch it disappear into the wood-fired oven.</p>
+    <button id="startBtn" class="btn primary xl">CREATE YOUR PIZZA</button>
+  </div>
+  <div class="box-wrap" aria-hidden="true">
+    <div class="box">
+      <div class="box-base"><div class="box-inner" id="boxPizza"></div></div>
+      <div class="box-lid">
+        <div class="lid-face">
+          <div class="lid-band"></div>
+          <svg class="lid-logo" viewBox="0 0 120 120"><circle cx="60" cy="60" r="54" fill="#c8261b"/><circle cx="60" cy="60" r="46" fill="none" stroke="#fbf3e3" stroke-width="2" stroke-dasharray="3 5"/><path d="M60 24c14 10 22 22 14 36-4 8-14 12-14 12s-10-4-14-12c-8-14 0-26 14-36z" fill="#4f8a2b"/><path d="M60 30v40" stroke="#fbf3e3" stroke-width="2"/><text x="60" y="96" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="15" fill="#fbf3e3">FORNO</text></svg>
+          <div class="lid-name">FornoLab</div>
+          <div class="lid-sub">32 cm · Neapolitan · Made your way</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STUDIO ============ -->
+<div id="app" hidden>
+  <header class="top">
+    <div class="wordmark sm">Forno<span>Lab</span></div>
+    <nav id="stepsNav" class="steps" aria-label="Pizza steps"></nav>
+    <div class="top-actions">
+      <button class="btn ghost" id="undoBtn" title="Undo last action (Ctrl+Z)">Undo</button>
+      <button class="btn ghost" id="resetBtn">Reset</button>
+      <button class="btn ghost" id="recipesBtn">Recipes</button>
+      <button class="btn primary" id="finishBtn">Finish &amp; bake</button>
+    </div>
+  </header>
+
+  <main class="studio">
+    <section class="tray" aria-label="Ingredient stations">
+      <div class="tray-head"><h2 id="trayTitle"></h2><p id="trayHint"></p></div>
+      <div id="trayBody"></div>
+    </section>
+
+    <section class="stage" aria-label="Your pizza">
+      <div class="stage-top">
+        <div class="pizza-title"><span class="kicker" id="recipeBadge">Custom creation</span><input id="pizzaName" maxlength="32" placeholder="Name your pizza" aria-label="Pizza name"></div>
+        <div class="size-tag">32 cm Neapolitan</div>
+      </div>
+      <div class="pizza-wrap" id="pizzaWrap">
+        <canvas id="pizza" aria-label="Interactive pizza. Drop ingredients here." role="img"></canvas>
+        <div class="empty-hint" id="emptyHint">Drop an ingredient here<br><small>or tap a pan to scatter it</small></div>
+      </div>
+      <div class="oven-dock" id="ovenDock"></div>
+      <div class="stage-nav">
+        <button class="btn ghost" id="prevBtn">Back</button>
+        <div class="stage-msg" id="stageMsg" aria-live="polite"></div>
+        <button class="btn primary" id="nextBtn">Next</button>
+      </div>
+    </section>
+
+    <aside class="info" aria-label="Pizza details">
+      <div class="card dna">
+        <div class="card-head"><h3>Flavor DNA</h3><span class="est">estimated scores 0–10</span></div>
+        <div id="radar"></div>
+        <p class="dna-line" id="dnaLine"></p>
+        <div class="matches" id="matches"></div>
+        <p class="fine">Scores are visual estimates built from an editable ingredient table — not lab measurements.</p>
+      </div>
+      <div class="tabs" role="tablist">
+        <button role="tab" data-tab="summary" class="on">Summary</button>
+        <button role="tab" data-tab="screen">Screening</button>
+        <button role="tab" data-tab="recipes">Recipes</button>
+      </div>
+      <div id="tab-summary" class="tabpane card"></div>
+      <div id="tab-screen" class="tabpane card" hidden></div>
+      <div id="tab-recipes" class="tabpane card" hidden></div>
+    </aside>
+  </main>
+</div>
+
+<!-- ============ FINISH (oven + garnish rain) ============ -->
+<div id="finish" class="overlay" hidden role="dialog" aria-modal="true" aria-label="Baking your pizza">
+  <div class="finish-inner">
+    <div class="finish-title" id="finTitle">Into the oven…</div>
+    <div class="finish-stage">
+      <div id="finOven"></div>
+      <canvas id="finCanvas"></canvas>
+    </div>
+    <div class="bake-bar"><i id="bakeBar"></i></div>
+    <div class="finish-actions" id="finActions" hidden>
+      <button class="btn primary xl" id="toReceipt">See your receipt</button>
+      <button class="btn ghost light" id="backFromFinish">Back to builder</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ RECEIPT ============ -->
+<div id="receipt" class="overlay receipt-ov" hidden role="dialog" aria-modal="true" aria-label="Pizza receipt">
+  <div class="receipt-scroll">
+    <article class="paper" id="paper"></article>
+    <div class="receipt-actions">
+      <button class="btn primary" id="newPizza">Create another pizza</button>
+      <button class="btn ghost light" id="printBtn">Print receipt</button>
+      <button class="btn ghost light" id="backToBuilder">Back to builder</button>
+    </div>
+  </div>
+</div>
+
+<div id="dialog" class="overlay dlg-ov" hidden role="alertdialog" aria-modal="true" aria-labelledby="dlgTitle">
+  <div class="dlg"><h3 id="dlgTitle"></h3><p id="dlgText"></p><div class="dlg-actions" id="dlgActions"></div></div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="glove" aria-hidden="true"><div class="glove-in"></div><canvas id="gloveItem" width="88" height="88"></canvas></div>
+
+<script src="data.js"></script>
+<script src="draw.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
